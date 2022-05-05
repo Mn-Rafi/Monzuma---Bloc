@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
 import 'package:money_manager_app/Hive/HiveClass/database.dart';
+import 'package:money_manager_app/Logic/Expense_bloc/expense_bloc.dart';
+import 'package:money_manager_app/Logic/search/search_bloc.dart';
 import 'package:money_manager_app/customs/add_category.dart';
 import 'package:money_manager_app/customs/custom_text_and_color.dart';
 import 'package:money_manager_app/homePage/widgets/custom_widgets.dart';
@@ -14,6 +17,7 @@ class ExpenseDisplay extends StatelessWidget {
   final DateTime dateofExpense;
   final String notesaboutExpense;
   final int index;
+  final String? searchInput;
 
   const ExpenseDisplay({
     Key? key,
@@ -23,6 +27,7 @@ class ExpenseDisplay extends StatelessWidget {
     required this.dateofExpense,
     required this.notesaboutExpense,
     required this.index,
+    this.searchInput,
   }) : super(key: key);
 
   @override
@@ -85,7 +90,10 @@ class ExpenseDisplay extends StatelessWidget {
                                                     Hive.box<Transactions>(
                                                             'transactions')
                                                         .delete(index);
-
+                                                        context.read<SearchBloc>().add(EnterInput(searchInput: searchInput ?? ''));
+                                                      context
+                                                        .read<ExpenseBloc>()
+                                                        .add(AllExpenseEvent());
                                                     Navigator.pop(context);
                                                     Navigator.pop(context);
                                                   },

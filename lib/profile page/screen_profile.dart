@@ -28,8 +28,7 @@ const String _url = 'https://mn-rafi.github.io/My-Personal-Website/';
 class _ScreenProfileDetailsState extends State<ScreenProfileDetails> {
   bool notificationValue =
       Hive.box<LockAuthentication>('lockAuth').values.toList()[0].enableAuth;
-  bool notiValue =
-      Hive.box<LockAuthentication>('lockAuth').values.toList()[0].enableNoti;
+
   final LocalAuthentication auth = LocalAuthentication();
 
   @override
@@ -66,6 +65,8 @@ class _ScreenProfileDetailsState extends State<ScreenProfileDetails> {
   DateTime? timeBackButton;
   @override
   Widget build(BuildContext context) {
+    bool notiValue = context.read<ShowimageCubit>().canCheckBiometrics(
+        Hive.box<LockAuthentication>('lockAuth').values.toList()[0].enableNoti);
     return WillPopScope(
       onWillPop: () async {
         DateTime now = DateTime.now();
@@ -183,7 +184,9 @@ class _ScreenProfileDetailsState extends State<ScreenProfileDetails> {
                                       ? firstWhite
                                       : firstBlack),
                             ),
-                            value: notiValue,
+                            value: context
+                                .read<ShowimageCubit>()
+                                .canCheckBiometrics(notiValue),
                             onChanged: (value) {
                               Hive.box<LockAuthentication>('lockAuth').putAt(
                                   0,
@@ -192,7 +195,7 @@ class _ScreenProfileDetailsState extends State<ScreenProfileDetails> {
                                       enableNoti: value));
                               notiValue = context
                                   .read<ShowimageCubit>()
-                                  .canCheckBiometrics(notiValue);
+                                  .canCheckBiometrics(value);
                               if (notiValue) {
                                 scheduledNotificationEveryday(
                                     Hive.box<ProfileDetails>('profiledetails')

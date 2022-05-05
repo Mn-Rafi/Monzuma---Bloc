@@ -1,12 +1,17 @@
 import 'dart:io';
 
 import 'package:delayed_widget/delayed_widget.dart';
+import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
 import 'package:money_manager_app/Category%20page/screen_catogories.dart';
 import 'package:money_manager_app/Hive/HiveClass/database.dart';
+import 'package:money_manager_app/Logic/Expense_bloc/expense_bloc.dart';
+import 'package:money_manager_app/Logic/income_bloc/income_bloc.dart';
+import 'package:money_manager_app/Logic/search/search_bloc.dart';
 import 'package:money_manager_app/add%20transaction%20page/custom_textfield.dart';
 import 'package:money_manager_app/customs/custom_text_and_color.dart';
 
@@ -75,7 +80,7 @@ class CustomContainerForCatogories extends StatelessWidget {
   }
 }
 
-class CustomEditTransaction extends StatefulWidget {
+class CustomEditTransaction extends StatefulWidget implements Equatable {
   final bool? slide;
   final double amount;
   final String notes;
@@ -86,6 +91,7 @@ class CustomEditTransaction extends StatefulWidget {
   final String listHint;
   final bool type;
   final Widget addFunction;
+  final String? searchInput;
   const CustomEditTransaction({
     Key? key,
     this.slide,
@@ -98,16 +104,23 @@ class CustomEditTransaction extends StatefulWidget {
     required this.listHint,
     required this.type,
     required this.addFunction,
+    this.searchInput,
   }) : super(key: key);
 
   @override
   State<CustomEditTransaction> createState() => _CustomEditTransactionState();
+
+  @override
+  List<Object?> get props => [];
+
+  @override
+  bool? get stringify => throw UnimplementedError();
 }
 
 class _CustomEditTransactionState extends State<CustomEditTransaction> {
   final Color bgColor = Colors.white;
   final formKey = GlobalKey<FormState>();
-  Categories? dropdownvalue;
+  Categories? dropdownvalues;
   DateTime date = DateTime.now();
   double? amount;
   String? notes;
@@ -120,11 +133,12 @@ class _CustomEditTransactionState extends State<CustomEditTransaction> {
   void initState() {
     notes = widget.notes == 'No notes found' ? '' : widget.notes;
     amount = widget.amount;
+    // dropdownvalues = widget.dropdownValue;
     date = widget.dateOfTransaction;
-    dropdownvalue = widget.dropdownValue;
     notes = widget.notes;
     super.initState();
   }
+
 
   @override
   Widget build(BuildContext context) {
@@ -182,14 +196,14 @@ class _CustomEditTransactionState extends State<CustomEditTransaction> {
                         valueListenable:
                             Hive.box<Categories>('categories').listenable(),
                         builder: (context, Box<Categories> box, _) {
-                          return DropdownButton<dynamic>(
+                          return DropdownButton<Categories>(
                             style: customTextStyleOne(),
                             underline: const SizedBox(),
                             hint: Text(
                               widget.listHint,
                               style: customTextStyleOne(color: firstGrey),
                             ),
-                            value: dropdownvalue,
+                            value: dropdownvalues,
                             icon: const Icon(Icons.keyboard_arrow_down),
                             items:
                                 type(box.values.toList())[widget.dropInt].map(
@@ -198,14 +212,14 @@ class _CustomEditTransactionState extends State<CustomEditTransaction> {
                                   child: Text(e.category),
                                   value: e,
                                   onTap: () {
-                                    dropdownvalue = e;
+                                    dropdownvalues = e;
                                   },
                                 );
                               },
                             ).toList(),
                             onChanged: (value) {
                               setState(() {
-                                dropdownvalue = value;
+                                dropdownvalues = value;
                               });
                             },
                           );
@@ -309,20 +323,30 @@ class _CustomEditTransactionState extends State<CustomEditTransaction> {
               ),
               CustomOutlinedButton(onPressed: () {
                 final isValidForm = formKey.currentState!.validate();
-                if (isValidForm && dropdownvalue != null) {
+                if (isValidForm && dropdownvalues != null) {
                   Hive.box<Transactions>('transactions').put(
                       widget.index,
                       Transactions(
-                          categoryName: dropdownvalue!.category,
+                          categoryName: dropdownvalues!.category,
                           amount: widget.type == true ? amount! : -amount!,
                           dateofTransaction: date,
                           notes: notes ?? 'No notes found',
-                          categoryCat: dropdownvalue!,
+                          categoryCat: dropdownvalues!,
                           type: widget.type));
                   if (widget.slide == null) {
+                    context
+                        .read<SearchBloc>()
+                        .add(EnterInput(searchInput: widget.searchInput ?? ''));
+                    context.read<IncomeBloc>().add(AllIncomeEvent());
+                     context.read<ExpenseBloc>().add(AllExpenseEvent());
                     Navigator.pop(context);
                     Navigator.pop(context);
                   } else {
+                    context
+                        .read<SearchBloc>()
+                        .add(EnterInput(searchInput: widget.searchInput ?? ''));
+                    context.read<IncomeBloc>().add(AllIncomeEvent());
+                     context.read<ExpenseBloc>().add(AllExpenseEvent());
                     Navigator.pop(context);
                   }
                 }

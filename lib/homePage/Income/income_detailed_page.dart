@@ -1,7 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+
 import 'package:money_manager_app/Hive/HiveClass/database.dart';
+import 'package:money_manager_app/Logic/Expense_bloc/expense_bloc.dart';
+import 'package:money_manager_app/Logic/income_bloc/income_bloc.dart';
+import 'package:money_manager_app/Logic/search/search_bloc.dart';
 import 'package:money_manager_app/customs/add_category.dart';
 import 'package:money_manager_app/customs/custom_text_and_color.dart';
 import 'package:money_manager_app/homePage/widgets/custom_widgets.dart';
@@ -13,6 +18,7 @@ class IncomeDisplay extends StatelessWidget {
   final DateTime dateofIncome;
   final String notesaboutIncome;
   final int index;
+  final String? searchInput;
 
   const IncomeDisplay({
     Key? key,
@@ -22,6 +28,7 @@ class IncomeDisplay extends StatelessWidget {
     required this.dateofIncome,
     required this.notesaboutIncome,
     required this.index,
+    this.searchInput,
   }) : super(key: key);
 
   @override
@@ -35,11 +42,12 @@ class IncomeDisplay extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 CloseButton(
-                  color:  firstBlack,
+                  color: firstBlack,
                   onPressed: () => Navigator.of(context).pop(),
                 ),
                 PopupMenuButton(
-                  icon: const Icon(Icons.more_vert_rounded, color: firstBlack),
+                    icon:
+                        const Icon(Icons.more_vert_rounded, color: firstBlack),
                     itemBuilder: (context) => [
                           PopupMenuItem(
                             onTap: () {
@@ -48,6 +56,7 @@ class IncomeDisplay extends StatelessWidget {
                                   () => showDialog(
                                       context: context,
                                       builder: (ctx) => CustomEditTransaction(
+                                            searchInput: searchInput,
                                             listHint: nameofCatagory.category,
                                             notes: notesaboutIncome,
                                             amount: incomeAmount,
@@ -82,6 +91,19 @@ class IncomeDisplay extends StatelessWidget {
                                                     Hive.box<Transactions>(
                                                             'transactions')
                                                         .delete(index);
+                                                    context
+                                                        .read<SearchBloc>()
+                                                        .add(EnterInput(
+                                                            searchInput:
+                                                                searchInput ??
+                                                                    ''));
+
+                                                    context
+                                                        .read<IncomeBloc>()
+                                                        .add(AllIncomeEvent());
+                                                        context
+                                                        .read<ExpenseBloc>()
+                                                        .add(AllExpenseEvent());
                                                     Navigator.pop(context);
                                                     Navigator.pop(context);
                                                   },

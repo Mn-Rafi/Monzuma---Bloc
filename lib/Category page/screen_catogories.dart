@@ -15,12 +15,12 @@ class ScreenCategories extends StatefulWidget {
 class _ScreenCategoriesState extends State<ScreenCategories>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
-  late Box<Categories> categories;
+  late Box<Categories> box;
   late Box<Transactions> box1;
 
   @override
   void initState() {
-    categories = Hive.box<Categories>('categories');
+    box = Hive.box<Categories>('categories');
     box1 = Hive.box<Transactions>('transactions');
     _tabController = TabController(length: 2, vsync: this);
     super.initState();
@@ -30,6 +30,8 @@ class _ScreenCategoriesState extends State<ScreenCategories>
   Widget build(BuildContext context) {
     Box<Transactions> box1 = Hive.box<Transactions>('transactions');
     List<Transactions> transactionList = box1.values.toList();
+    List<Categories> incomeCategories = type(box.values.toList())[0];
+    List<Categories> expenseCategories = type(box.values.toList())[1];
     return SafeArea(
       child: Scaffold(
         resizeToAvoidBottomInset: false,
@@ -75,120 +77,118 @@ class _ScreenCategoriesState extends State<ScreenCategories>
                   children: [
                     Expanded(
                       child: SingleChildScrollView(
-                        child: ValueListenableBuilder(
-                          valueListenable: categories.listenable(),
-                          builder: (context, Box<Categories> box, _) {
-                            List<Categories> incomeCategories =
-                                type(box.values.toList())[0];
-
-                            return incomeCategories.isEmpty
-                                ? const Padding(
-                                    padding: EdgeInsets.only(top: 300),
-                                    child: Text('No categories found'),
-                                  )
-                                : ListView.builder(
-                                    physics:
-                                        const NeverScrollableScrollPhysics(),
-                                    shrinkWrap: true,
-                                    itemCount: incomeCategories.length,
-                                    itemBuilder: (context, index) => ListTile(
-                                          iconColor: MediaQuery.of(context)
-                                                      .platformBrightness ==
-                                                  Brightness.dark
-                                              ? firstWhite
-                                              : firstBlack,
-                                          trailing: PopupMenuButton(
-                                              itemBuilder: (context) => [
-                                                    PopupMenuItem(
-                                                      onTap: () {
-                                                        Future.delayed(
-                                                            const Duration(
-                                                                seconds: 0),
-                                                            () => showDialog(
-                                                                  context:
-                                                                      context,
-                                                                  builder:
-                                                                      (context) =>
-                                                                          EditIncomeCategory(
-                                                                    typeTransactonList:
-                                                                        incomeCategories,
-                                                                    transactionList:
-                                                                        transactionList,
-                                                                    type: true,
-                                                                    index: incomeCategories[
+                        child: incomeCategories.isEmpty
+                            ? const Padding(
+                                padding: EdgeInsets.only(top: 300),
+                                child: Text('No categories found'),
+                              )
+                            : ListView.builder(
+                                physics: const NeverScrollableScrollPhysics(),
+                                shrinkWrap: true,
+                                itemCount: incomeCategories.length,
+                                itemBuilder: (context, index) => ListTile(
+                                      iconColor: MediaQuery.of(context)
+                                                  .platformBrightness ==
+                                              Brightness.dark
+                                          ? firstWhite
+                                          : firstBlack,
+                                      trailing: PopupMenuButton(
+                                          itemBuilder: (context) => [
+                                                PopupMenuItem(
+                                                  onTap: () {
+                                                    Future.delayed(
+                                                        const Duration(
+                                                            seconds: 0),
+                                                        () => showDialog(
+                                                              context: context,
+                                                              builder: (context) =>
+                                                                  EditIncomeCategory(
+                                                                typeTransactonList:
+                                                                    incomeCategories,
+                                                                transactionList:
+                                                                    transactionList,
+                                                                type: true,
+                                                                index:
+                                                                    incomeCategories[
                                                                             index]
                                                                         .key,
-                                                                    initialValue:
-                                                                        incomeCategories[index]
-                                                                            .category,
-                                                                  ),
-                                                                ));
-                                                      },
-                                                      child: const Text('Edit'),
-                                                    ),
-                                                    PopupMenuItem(
-                                                        onTap: () {
-                                                          Future.delayed(
-                                                              const Duration(
-                                                                  seconds: 0),
-                                                              () => showDialog(
-                                                                  context:
-                                                                      context,
-                                                                  builder: (ctx) =>
-                                                                      AlertDialog(
-                                                                        title:
+                                                                initialValue:
+                                                                    incomeCategories[
+                                                                            index]
+                                                                        .category,
+                                                              ),
+                                                            ));
+                                                  },
+                                                  child: const Text('Edit'),
+                                                ),
+                                                PopupMenuItem(
+                                                    onTap: () {
+                                                      Future.delayed(
+                                                          const Duration(
+                                                              seconds: 0),
+                                                          () => showDialog(
+                                                              context: context,
+                                                              builder: (ctx) =>
+                                                                  AlertDialog(
+                                                                    title: Text(
+                                                                      'Previous transactions of this category will be deleted permanantly. Continue?',
+                                                                      style: customTextStyleOne(
+                                                                          fontSize:
+                                                                              15),
+                                                                    ),
+                                                                    actions: [
+                                                                      TextButton(
+                                                                        onPressed:
+                                                                            () {
+                                                                          for (int i = 0;
+                                                                              i < transactionList.length;
+                                                                              i++) {
+                                                                            if (transactionList[i].categoryName ==
+                                                                                incomeCategories[index].category) {
+                                                                              Hive.box<Transactions>('transactions').delete(transactionList[i].key);
+                                                                            }
+                                                                          }
+                                                                          Hive.box<Categories>('categories')
+                                                                              .delete(incomeCategories[index].key);
+                                                                          Navigator.pop(
+                                                                              context);
+                                                                        },
+                                                                        child:
                                                                             Text(
-                                                                          'Previous transactions of this category will be deleted permanantly. Continue?',
+                                                                          'Yes',
                                                                           style:
-                                                                              customTextStyleOne(fontSize: 15),
+                                                                              customTextStyleOne(),
                                                                         ),
-                                                                        actions: [
-                                                                          TextButton(
-                                                                            onPressed:
-                                                                                () {
-                                                                              for (int i = 0; i < transactionList.length; i++) {
-                                                                                if (transactionList[i].categoryName == incomeCategories[index].category) {
-                                                                                  Hive.box<Transactions>('transactions').delete(transactionList[i].key);
-                                                                                }
-                                                                              }
-                                                                              Hive.box<Categories>('categories').delete(incomeCategories[index].key);
-                                                                              Navigator.pop(context);
-                                                                            },
-                                                                            child:
-                                                                                Text(
-                                                                              'Yes',
-                                                                              style: customTextStyleOne(),
-                                                                            ),
-                                                                          ),
-                                                                          TextButton(
-                                                                            onPressed:
-                                                                                () {
-                                                                              Navigator.pop(context);
-                                                                            },
-                                                                            child:
-                                                                                Text(
-                                                                              'No',
-                                                                              style: customTextStyleOne(),
-                                                                            ),
-                                                                          )
-                                                                        ],
-                                                                      )));
-                                                        },
-                                                        child: const Text(
-                                                            'Delete')),
-                                                  ]),
-                                          title: Text(
-                                            incomeCategories[index].category,
-                                            style: customTextStyleOne(
-                                                color: MediaQuery.of(context)
-                                                            .platformBrightness ==
-                                                        Brightness.dark
-                                                    ? firstWhite
-                                                    : firstBlack),
-                                          ),
-                                        ));
-                          },
-                        ),
+                                                                      ),
+                                                                      TextButton(
+                                                                        onPressed:
+                                                                            () {
+                                                                          Navigator.pop(
+                                                                              context);
+                                                                        },
+                                                                        child:
+                                                                            Text(
+                                                                          'No',
+                                                                          style:
+                                                                              customTextStyleOne(),
+                                                                        ),
+                                                                      )
+                                                                    ],
+                                                                  )));
+                                                    },
+                                                    child:
+                                                        const Text('Delete')),
+                                              ]),
+                                      title: Text(
+                                        incomeCategories[index].category,
+                                        style: customTextStyleOne(
+                                            color: MediaQuery.of(context)
+                                                        .platformBrightness ==
+                                                    Brightness.dark
+                                                ? firstWhite
+                                                : firstBlack),
+                                      ),
+                                    )),
                       ),
                     ),
                     TextButton.icon(
@@ -213,113 +213,126 @@ class _ScreenCategoriesState extends State<ScreenCategories>
                   children: [
                     Expanded(
                       child: SingleChildScrollView(
-                          child: ValueListenableBuilder(
-                              valueListenable: categories.listenable(),
-                              builder: (context, Box<Categories> box, _) {
-                                List<Categories> expenseCategories =
-                                    type(box.values.toList())[1];
-
-                                return expenseCategories.isEmpty
-                                    ? const Padding(
-                                        padding: EdgeInsets.only(top: 300),
-                                        child: Text('No categories found'),
-                                      )
-                                    : ListView.builder(
-                                        physics:
-                                            const NeverScrollableScrollPhysics(),
-                                        shrinkWrap: true,
-                                        itemCount: expenseCategories.length,
-                                        itemBuilder:
-                                            (context, index) => ListTile(
-                                                  iconColor: MediaQuery.of(
-                                                                  context)
-                                                              .platformBrightness ==
-                                                          Brightness.dark
-                                                      ? firstWhite
-                                                      : firstBlack,
-                                                  trailing: PopupMenuButton(
-                                                      itemBuilder:
-                                                          (context) => [
-                                                                PopupMenuItem(
-                                                                  onTap: () {
-                                                                    Future.delayed(
-                                                                        const Duration(seconds: 0),
-                                                                        () => showDialog(
-                                                                              context: context,
-                                                                              builder: (context) => EditIncomeCategory(
-                                                                                typeTransactonList: expenseCategories,
-                                                                                transactionList: transactionList,
-                                                                                type: false,
-                                                                                index: expenseCategories[index].key,
-                                                                                initialValue: expenseCategories[index].category,
-                                                                              ),
-                                                                            ));
-                                                                  },
-                                                                  child: Text(
-                                                                    'Edit',
-                                                                    style:
-                                                                        customTextStyleOne(),
-                                                                  ),
-                                                                ),
-                                                                PopupMenuItem(
-                                                                    onTap: () {
-                                                                      Future.delayed(
-                                                                          const Duration(seconds: 0),
-                                                                          () => showDialog(
-                                                                              context: context,
-                                                                              builder: (ctx) => AlertDialog(
-                                                                                    title: Text(
-                                                                                      'All previous transactions of this category will be deleted permanantly. Do you really want to continue?',
-                                                                                      style: customTextStyleOne(fontSize: 15),
-                                                                                    ),
-                                                                                    actions: [
-                                                                                      TextButton(
-                                                                                        onPressed: () {
-                                                                                          for (int i = 0; i < transactionList.length; i++) {
-                                                                                            if (transactionList[i].categoryName == expenseCategories[index].category) {
-                                                                                              Hive.box<Transactions>('transactions').delete(transactionList[i].key);
-                                                                                            }
-                                                                                          }
-                                                                                          Hive.box<Categories>('categories').delete(expenseCategories[index].key);
-
-                                                                                          Navigator.pop(context);
-                                                                                        },
-                                                                                        child: Text(
-                                                                                          'Yes',
-                                                                                          style: customTextStyleOne(),
-                                                                                        ),
-                                                                                      ),
-                                                                                      TextButton(
-                                                                                        onPressed: () {
-                                                                                          Navigator.pop(context);
-                                                                                        },
-                                                                                        child: Text(
-                                                                                          'No',
-                                                                                          style: customTextStyleOne(),
-                                                                                        ),
-                                                                                      )
-                                                                                    ],
-                                                                                  )));
-                                                                    },
-                                                                    child: Text(
-                                                                      'Delete',
-                                                                      style:
-                                                                          customTextStyleOne(),
-                                                                    )),
-                                                              ]),
-                                                  title: Text(
-                                                    expenseCategories[index]
-                                                        .category,
-                                                    style: customTextStyleOne(
-                                                        color: MediaQuery.of(
-                                                                        context)
-                                                                    .platformBrightness ==
-                                                                Brightness.dark
-                                                            ? firstWhite
-                                                            : firstBlack),
+                        child: expenseCategories.isEmpty
+                            ? const Padding(
+                                padding: EdgeInsets.only(top: 300),
+                                child: Text('No categories found'),
+                              )
+                            : ListView.builder(
+                                physics: const NeverScrollableScrollPhysics(),
+                                shrinkWrap: true,
+                                itemCount: expenseCategories.length,
+                                itemBuilder: (context, index) => ListTile(
+                                      iconColor: MediaQuery.of(context)
+                                                  .platformBrightness ==
+                                              Brightness.dark
+                                          ? firstWhite
+                                          : firstBlack,
+                                      trailing: PopupMenuButton(
+                                          itemBuilder: (context) => [
+                                                PopupMenuItem(
+                                                  onTap: () {
+                                                    Future.delayed(
+                                                        const Duration(
+                                                            seconds: 0),
+                                                        () => showDialog(
+                                                              context: context,
+                                                              builder: (context) =>
+                                                                  EditIncomeCategory(
+                                                                typeTransactonList:
+                                                                    expenseCategories,
+                                                                transactionList:
+                                                                    transactionList,
+                                                                type: false,
+                                                                index:
+                                                                    expenseCategories[
+                                                                            index]
+                                                                        .key,
+                                                                initialValue:
+                                                                    expenseCategories[
+                                                                            index]
+                                                                        .category,
+                                                              ),
+                                                            ));
+                                                  },
+                                                  child: Text(
+                                                    'Edit',
+                                                    style: customTextStyleOne(),
                                                   ),
-                                                ));
-                              })),
+                                                ),
+                                                PopupMenuItem(
+                                                    onTap: () {
+                                                      Future.delayed(
+                                                          const Duration(
+                                                              seconds: 0),
+                                                          () => showDialog(
+                                                              context: context,
+                                                              builder: (ctx) =>
+                                                                  AlertDialog(
+                                                                    title: Text(
+                                                                      'All previous transactions of this category will be deleted permanantly. Do you really want to continue?',
+                                                                      style: customTextStyleOne(
+                                                                          fontSize:
+                                                                              15),
+                                                                    ),
+                                                                    actions: [
+                                                                      TextButton(
+                                                                        onPressed:
+                                                                            () {
+                                                                          for (int i = 0;
+                                                                              i < transactionList.length;
+                                                                              i++) {
+                                                                            if (transactionList[i].categoryName ==
+                                                                                expenseCategories[index].category) {
+                                                                              Hive.box<Transactions>('transactions').delete(transactionList[i].key);
+                                                                            }
+                                                                          }
+                                                                          Hive.box<Categories>('categories')
+                                                                              .delete(expenseCategories[index].key);
+
+                                                                          Navigator.pop(
+                                                                              context);
+                                                                        },
+                                                                        child:
+                                                                            Text(
+                                                                          'Yes',
+                                                                          style:
+                                                                              customTextStyleOne(),
+                                                                        ),
+                                                                      ),
+                                                                      TextButton(
+                                                                        onPressed:
+                                                                            () {
+                                                                          Navigator.pop(
+                                                                              context);
+                                                                        },
+                                                                        child:
+                                                                            Text(
+                                                                          'No',
+                                                                          style:
+                                                                              customTextStyleOne(),
+                                                                        ),
+                                                                      )
+                                                                    ],
+                                                                  )));
+                                                    },
+                                                    child: Text(
+                                                      'Delete',
+                                                      style:
+                                                          customTextStyleOne(),
+                                                    )),
+                                              ]),
+                                      title: Text(
+                                        expenseCategories[index].category,
+                                        style: customTextStyleOne(
+                                            color: MediaQuery.of(context)
+                                                        .platformBrightness ==
+                                                    Brightness.dark
+                                                ? firstWhite
+                                                : firstBlack),
+                                      ),
+                                    )),
+                      ),
                     ),
                     TextButton.icon(
                         style: ButtonStyle(

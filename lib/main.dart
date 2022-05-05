@@ -5,7 +5,11 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:money_manager_app/Hive/HiveClass/database.dart';
+import 'package:money_manager_app/Logic/Expense_bloc/expense_bloc.dart';
+import 'package:money_manager_app/Logic/Regular%20Payment/regularpayments_bloc.dart';
 import 'package:money_manager_app/Logic/cubit/showimage_cubit.dart';
+import 'package:money_manager_app/Logic/income_bloc/income_bloc.dart';
+import 'package:money_manager_app/Logic/search/search_bloc.dart';
 import 'package:money_manager_app/Splash Screen/screen_splash.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:money_manager_app/themedata.dart';
@@ -65,8 +69,24 @@ class MyApp extends StatelessWidget {
         SystemChrome.setPreferredOrientations([
           DeviceOrientation.portraitUp,
         ]);
-        return BlocProvider(
-          create: (context) => ShowimageCubit(),
+        return MultiBlocProvider(
+          providers: [
+            BlocProvider(
+              create: (context) => ShowimageCubit(),
+            ),
+            BlocProvider(
+              create: (context) => RegularpaymentsBloc(),
+            ),
+            BlocProvider(
+              create: (context) => SearchBloc(),
+            ),
+            BlocProvider(
+              create: (context) => IncomeBloc(),
+            ),
+            BlocProvider(
+              create: (context) => ExpenseBloc(),
+            ),
+          ],
           child: MaterialApp(
               themeMode: ThemeMode.system,
               localizationsDelegates: const [

@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:money_manager_app/Hive/HiveClass/database.dart';
+import 'package:money_manager_app/Logic/Regular%20Payment/regularpayments_bloc.dart';
 import 'package:money_manager_app/Notification/notifications.dart';
+import 'package:money_manager_app/Regular%20Payment/screen_regularpayments.dart';
 import 'package:money_manager_app/add%20transaction%20page/custom_textfield.dart';
 import 'package:money_manager_app/customs/custom_text_and_color.dart';
 
@@ -116,6 +119,7 @@ class _RegularPaymentAddState extends State<RegularPaymentAdd> {
                             upcomingDate: date,
                           ),
                         );
+                          context.read<RegularpaymentsBloc>().add(AddRegularPayment());
                         scheduledNotification(date.day, name,
                             date.microsecond + date.hour + date.minute);
                         scheduledNotificationRepeat(date.day, name,
@@ -257,13 +261,14 @@ class _RegularPaymentEditState extends State<RegularPaymentEdit> {
                   CustomOutlinedButton(
                     onPressed: () {
                       if (formKey.currentState!.validate()) {
-                        regHive.putAt(
+                        regHive.put(
                           widget.index,
                           RegularPayments(
                             title: name!,
                             upcomingDate: date,
                           ),
                         );
+                        context.read<RegularpaymentsBloc>().add(AddRegularPayment());
                         cancelScheduledNotificationsOne(
                             widget.initialdate.microsecond +
                                 widget.initialdate.hour +

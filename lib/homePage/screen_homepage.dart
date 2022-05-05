@@ -5,6 +5,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:money_manager_app/Hive/HiveClass/database.dart';
 import 'package:money_manager_app/Logic/cubit/showimage_cubit.dart';
+import 'package:money_manager_app/Logic/search/search_bloc.dart';
 import 'package:money_manager_app/customs/utilities.dart';
 import 'package:money_manager_app/homePage/expense/expense_details.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -209,8 +210,8 @@ class _ScreenHomePageState extends State<ScreenHomePage> {
                               height: 40,
                               child: context
                                   .read<ShowimageCubit>()
-                                  .changeMyField(
-                                      myIcon!.icon!, myField!, searchInput),
+                                  .changeMyField(myIcon!.icon!, myField!,
+                                      searchInput, context),
                             ),
                           ),
                           GestureDetector(
@@ -218,14 +219,15 @@ class _ScreenHomePageState extends State<ScreenHomePage> {
                               if (myIcon!.icon == Icons.search) {
                                 myIcon = Icon(context
                                     .read<ShowimageCubit>()
-                                    .changeIcon(
-                                        Icons.clear, myField!, searchInput));
+                                    .changeIcon(Icons.clear, myField!,
+                                        searchInput, context));
                               } else {
                                 searchInput = '';
+                                context.read<SearchBloc>().add(ClearInput());
                                 myIcon = Icon(context
                                     .read<ShowimageCubit>()
-                                    .changeIcon(
-                                        Icons.search, myField!, searchInput));
+                                    .changeIcon(Icons.search, myField!,
+                                        searchInput, context));
                               }
                             },
                             child: myIcon,
@@ -248,59 +250,92 @@ class _ScreenHomePageState extends State<ScreenHomePage> {
                             ),
                           ),
                         )
-                      : GridView.builder(
-                          physics: const NeverScrollableScrollPhysics(),
-                          shrinkWrap: true,
-                          gridDelegate:
-                              SliverGridDelegateWithFixedCrossAxisCount(
-                            childAspectRatio: 2.8.h,
-                            crossAxisCount: 2,
-                            mainAxisSpacing: 10.w,
-                            crossAxisSpacing: 10.w,
-                          ),
-                          itemBuilder: (context, index) {
-                            return GestureDetector(
-                              onTap: () => showDialog(
-                                  context: context,
-                                  builder: (ctx) => transactionList[index].amount > 0
-                                      ? IncomeDisplay(
-                                          category: transactionList[index]
-                                              .categoryName,
-                                          index: transactionList[index].key,
-                                          incomeAmount:
-                                              transactionList[index].amount,
-                                          nameofCatagory: transactionList[index]
-                                              .categoryCat,
-                                          dateofIncome: transactionList[index]
-                                              .dateofTransaction,
-                                          notesaboutIncome:
-                                              transactionList[index].notes)
-                                      : ExpenseDisplay(
-                                          category: transactionList[index]
-                                              .categoryName,
-                                          index: transactionList[index].key,
-                                          dateofExpense: transactionList[index]
-                                              .dateofTransaction,
-                                          expenseAmount:
-                                              transactionList[index].amount,
-                                          nameofCatagory: transactionList[index]
-                                              .categoryCat,
-                                          notesaboutExpense:
-                                              transactionList[index].notes)),
-                              child: CustomGridContainer(
-                                  imagePath: transactionList[index].amount >= 0
-                                      ? 'images/incomeGreen.jpg'
-                                      : 'images/expenseBlue.jpg',
-                                  amount: transactionList[index].amount >= 0
-                                      ? transactionList[index].amount
-                                      : -transactionList[index].amount,
-                                  categoryName: transactionList[index].amount >=
-                                          0
-                                      ? transactionList[index].categoryName
-                                      : transactionList[index].categoryName),
-                            );
+                      : BlocBuilder<SearchBloc, SearchState>(
+                          builder: (context, state) {
+                            transactionList =
+                                state.props[0] as List<Transactions>;
+                            transactionList.sort((first, second) => second
+                                .dateofTransaction
+                                .compareTo(first.dateofTransaction));
+                            return transactionList.isEmpty
+                                ? Center(
+                                    child: Padding(
+                                      padding: const EdgeInsets.symmetric(
+                                          vertical: 60.0),
+                                      child: Text(
+                                        'No Transactions Found 🙂',
+                                        style: customTextStyleOne(
+                                            fontSize: 18, color: firstGrey),
+                                      ),
+                                    ),
+                                  )
+                                : GridView.builder(
+                                    physics:
+                                        const NeverScrollableScrollPhysics(),
+                                    shrinkWrap: true,
+                                    gridDelegate:
+                                        SliverGridDelegateWithFixedCrossAxisCount(
+                                      childAspectRatio: 2.8.h,
+                                      crossAxisCount: 2,
+                                      mainAxisSpacing: 10.w,
+                                      crossAxisSpacing: 10.w,
+                                    ),
+                                    itemBuilder: (context, index) {
+                                      return GestureDetector(
+                                        onTap: () => showDialog(
+                                            context: context,
+                                            builder: (ctx) => transactionList[index].amount > 0
+                                                ? IncomeDisplay(
+                                                  searchInput: searchInput,
+                                                    category: transactionList[index]
+                                                        .categoryName,
+                                                    index: transactionList[index]
+                                                        .key,
+                                                    incomeAmount:
+                                                        transactionList[index]
+                                                            .amount,
+                                                    nameofCatagory:
+                                                        transactionList[index]
+                                                            .categoryCat,
+                                                    dateofIncome:
+                                                        transactionList[index]
+                                                            .dateofTransaction,
+                                                    notesaboutIncome:
+                                                        transactionList[index]
+                                                            .notes)
+                                                : ExpenseDisplay(
+                                                  searchInput: searchInput,
+                                                    category: transactionList[index]
+                                                        .categoryName,
+                                                    index: transactionList[index].key,
+                                                    dateofExpense: transactionList[index].dateofTransaction,
+                                                    expenseAmount: transactionList[index].amount,
+                                                    nameofCatagory: transactionList[index].categoryCat,
+                                                    notesaboutExpense: transactionList[index].notes)),
+                                        child: CustomGridContainer(
+                                            imagePath:
+                                                transactionList[index].amount >=
+                                                        0
+                                                    ? 'images/incomeGreen.jpg'
+                                                    : 'images/expenseBlue.jpg',
+                                            amount: transactionList[index]
+                                                        .amount >=
+                                                    0
+                                                ? transactionList[index].amount
+                                                : -transactionList[index]
+                                                    .amount,
+                                            categoryName: transactionList[index]
+                                                        .amount >=
+                                                    0
+                                                ? transactionList[index]
+                                                    .categoryName
+                                                : transactionList[index]
+                                                    .categoryName),
+                                      );
+                                    },
+                                    itemCount: transactionList.length,
+                                  );
                           },
-                          itemCount: transactionList.length,
                         )
                 ],
               ),

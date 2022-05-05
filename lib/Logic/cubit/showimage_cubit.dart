@@ -1,7 +1,9 @@
-import 'package:bloc/bloc.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:money_manager_app/Logic/search/search_bloc.dart';
 import 'package:money_manager_app/customs/custom_text_and_color.dart';
 
 part 'showimage_state.dart';
@@ -19,7 +21,7 @@ class ShowimageCubit extends Cubit<ShowimageState> {
     return notification;
   }
 
-  IconData changeIcon(IconData iconData, Widget myField, String searchInput) {
+  IconData changeIcon(IconData iconData, Widget myField, String searchInput, BuildContext context) {
     if (iconData == Icons.clear) {
       emit(SearchIconState(iconData: Icons.clear, myField: myField));
       return SearchIconState(
@@ -35,6 +37,7 @@ class ShowimageCubit extends Cubit<ShowimageState> {
                 style: customTextStyleOne(),
                 onChanged: (value) {
                   searchInput = value;
+                  context.read<SearchBloc>().add(EnterInput(searchInput: value));
                 },
                 decoration: InputDecoration(
                   border: InputBorder.none,
@@ -56,31 +59,33 @@ class ShowimageCubit extends Cubit<ShowimageState> {
     }
   }
 
-  Widget changeMyField(IconData iconData, Widget myField, String searchInput) {
+  Widget changeMyField(IconData iconData, Widget myField, String searchInput, BuildContext context) {
     if (iconData == Icons.clear) {
-      emit(SearchIconState(iconData: iconData, myField: myField));
+      emit(SearchIconState(iconData: iconData, myField: myField, ));
       return SearchIconState(
-          iconData: iconData,
-          myField: Container(
-            decoration: BoxDecoration(
-              color: const Color.fromARGB(255, 233, 233, 233),
-              borderRadius: BorderRadius.circular(10.0),
-            ),
-            child: Padding(
-              padding: const EdgeInsets.only(left: 15, right: 15, top: 5),
-              child: TextField(
-                style: customTextStyleOne(),
-                onChanged: (value) {
-                  searchInput = value;
-                },
-                decoration: InputDecoration(
-                  border: InputBorder.none,
-                  hintStyle: customTextStyleOne(),
-                  hintText: 'Search here...',
-                ),
+        iconData: iconData,
+        myField: Container(
+          decoration: BoxDecoration(
+            color: const Color.fromARGB(255, 233, 233, 233),
+            borderRadius: BorderRadius.circular(10.0),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.only(left: 15, right: 15, top: 5),
+            child: TextField(
+              style: customTextStyleOne(),
+              onChanged: (value) {
+                searchInput = value;
+                  context.read<SearchBloc>().add(EnterInput(searchInput: value));
+              },
+              decoration: InputDecoration(
+                border: InputBorder.none,
+                hintStyle: customTextStyleOne(),
+                hintText: 'Search here...',
               ),
             ),
-          )).myField;
+          ),
+        ),
+      ).myField;
     } else {
       emit(SearchIconState(
           iconData: Icons.clear,
@@ -89,6 +94,8 @@ class ShowimageCubit extends Cubit<ShowimageState> {
             style: customTextStyleOne(
                 fontSize: 20.sp, color: isDarkMode ? firstWhite : firstBlack),
           )));
+          
+                  context.read<SearchBloc>().add(ClearInput());
       return SearchIconState(iconData: iconData, myField: myField).myField;
     }
   }

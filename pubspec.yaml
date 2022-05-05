@@ -32,6 +32,7 @@ dependencies:
   bloc: ^8.0.3
   cupertino_icons: ^1.0.2
   delayed_widget: ^1.1.1
+  equatable: ^2.0.3
   flutter:
     sdk: flutter
   flutter_bloc: ^8.0.1

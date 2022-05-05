@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:money_manager_app/Hive/HiveClass/database.dart';
+import 'package:money_manager_app/Logic/Regular%20Payment/regularpayments_bloc.dart';
 import 'package:money_manager_app/Notification/notifications.dart';
 import 'package:money_manager_app/Regular%20Payment/regular_payment_widget.dart';
 import 'package:money_manager_app/customs/custom_text_and_color.dart';
@@ -102,139 +104,146 @@ class _RegularPaymentState extends State<RegularPayment> {
               SizedBox(
                 height: 20.h,
               ),
-              ValueListenableBuilder(
-                  valueListenable: regHive.listenable(),
-                  builder: (context, Box<RegularPayments> box, _) {
-                    List<RegularPayments> regListOne = regHive.values.toList();
-                    regListOne.sort((first, second) {
-                      return second.upcomingDate.compareTo(first.upcomingDate);
-                    });
-                    List<RegularPayments> regList = regListOne;
-                    return regHive.isEmpty
-                        ? Center(
-                            child: Text(
-                            'No Regular Payments Found',
-                            style: customTextStyleOne(
-                                color:
-                                    MediaQuery.of(context).platformBrightness ==
-                                            Brightness.dark
-                                        ? firstWhite
-                                        : firstBlack),
-                          ))
-                        : ListView.builder(
-                            physics: const BouncingScrollPhysics(),
-                            reverse: true,
-                            shrinkWrap: true,
-                            itemBuilder: ((context, index) {
-                              return Padding(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 8.0, vertical: 4),
-                                child: ListTile(
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(10),
-                                    side: const BorderSide(
-                                        width: 0.5, color: Colors.black),
-                                  ),
-                                  tileColor:
-                                      const Color.fromARGB(255, 243, 242, 242),
-                                  title: Text(
-                                    getText(regList[index].upcomingDate),
-                                    style: customTextStyleOne(fontSize: 20),
-                                  ),
-                                  subtitle: Text(
-                                    regList[index].title,
-                                    style: customTextStyleOne(),
-                                  ),
-                                  trailing: PopupMenuButton(
-                                      itemBuilder: (context) => [
-                                            PopupMenuItem(
-                                              onTap: () {
-                                                Future.delayed(
-                                                    const Duration(seconds: 0),
-                                                    () => showDialog(
-                                                        context: context,
-                                                        builder: (ctx) =>
-                                                            RegularPaymentEdit(
-                                                              index: index,
-                                                              initialdate: regList[
-                                                                      index]
+              BlocBuilder<RegularpaymentsBloc, RegularpaymentsState>(
+                  builder: (context, state) {
+                List<RegularPayments> regListOne = state.props[0] as List<RegularPayments>;
+                regListOne.sort((first, second) {
+                  return second.upcomingDate.compareTo(first.upcomingDate);
+                });
+                List<RegularPayments> regList = regListOne;
+                return regHive.isEmpty
+                    ? Center(
+                        child: Text(
+                        'No Regular Payments Found',
+                        style: customTextStyleOne(
+                            color: MediaQuery.of(context).platformBrightness ==
+                                    Brightness.dark
+                                ? firstWhite
+                                : firstBlack),
+                      ))
+                    : ListView.builder(
+                        physics: const BouncingScrollPhysics(),
+                        reverse: true,
+                        shrinkWrap: true,
+                        itemBuilder: ((context, index) {
+                          return Padding(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 8.0, vertical: 4),
+                            child: ListTile(
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10),
+                                side: const BorderSide(
+                                    width: 0.5, color: Colors.black),
+                              ),
+                              tileColor:
+                                  const Color.fromARGB(255, 243, 242, 242),
+                              title: Text(
+                                getText(regList[index].upcomingDate),
+                                style: customTextStyleOne(fontSize: 20),
+                              ),
+                              subtitle: Text(
+                                regList[index].title,
+                                style: customTextStyleOne(),
+                              ),
+                              trailing: PopupMenuButton(
+                                  itemBuilder: (context) => [
+                                        PopupMenuItem(
+                                          onTap: () {
+                                            Future.delayed(
+                                                const Duration(seconds: 0),
+                                                () => showDialog(
+                                                    context: context,
+                                                    builder: (ctx) =>
+                                                        RegularPaymentEdit(
+                                                          index: index,
+                                                          initialdate:
+                                                              regList[index]
                                                                   .upcomingDate,
-                                                              intialName:
-                                                                  regList[index]
-                                                                      .title,
-                                                            )));
-                                              },
-                                              child: Text(
-                                                'Edit',
-                                                style: customTextStyleOne(),
-                                              ),
-                                            ),
-                                            PopupMenuItem(
-                                                onTap: () {
-                                                  Future.delayed(
-                                                      const Duration(
-                                                          seconds: 0),
-                                                      () => showDialog(
-                                                          context: context,
-                                                          builder:
-                                                              (ctx) =>
-                                                                  AlertDialog(
-                                                                    title: Text(
-                                                                      'Notification for this payment will not be available. Continue?',
-                                                                      style: customTextStyleOne(
-                                                                          fontSize:
-                                                                              15),
-                                                                    ),
-                                                                    actions: [
-                                                                      TextButton(
-                                                                        onPressed:
-                                                                            () {
+                                                          intialName:
+                                                              regList[index]
+                                                                  .title,
+                                                        )));
+                                          },
+                                          child: Text(
+                                            'Edit',
+                                            style: customTextStyleOne(),
+                                          ),
+                                        ),
+                                        PopupMenuItem(
+                                            onTap: () {
+                                              Future.delayed(
+                                                  const Duration(seconds: 0),
+                                                  () => showDialog(
+                                                      context: context,
+                                                      builder:
+                                                          (ctx) => AlertDialog(
+                                                                title: Text(
+                                                                  'Notification for this payment will not be available. Continue?',
+                                                                  style: customTextStyleOne(
+                                                                      fontSize:
+                                                                          15),
+                                                                ),
+                                                                actions: [
+                                                                  TextButton(
+                                                                    onPressed:
+                                                                        () {
+                                                                      regList[index]
+                                                                          .delete();
+                                                                      Navigator.pop(
+                                                                          context);
+                                                                      cancelScheduledNotificationsOne(regList[index].upcomingDate.minute +
                                                                           regList[index]
-                                                                              .delete();
-                                                                          Navigator.pop(
-                                                                              context);
-                                                                          cancelScheduledNotificationsOne(regList[index].upcomingDate.minute +
-                                                                              regList[index].upcomingDate.hour +
-                                                                              regList[index].upcomingDate.microsecond);
-                                                                          cancelScheduledNotificationsOne(regList[index].upcomingDate.minute +
-                                                                              regList[index].upcomingDate.hour +
-                                                                              regList[index].upcomingDate.microsecond +
-                                                                              1);
-                                                                        },
-                                                                        child:
-                                                                            Text(
-                                                                          'Yes',
-                                                                          style:
-                                                                              customTextStyleOne(),
-                                                                        ),
-                                                                      ),
-                                                                      TextButton(
-                                                                        onPressed:
-                                                                            () {
-                                                                          Navigator.pop(
-                                                                              context);
-                                                                        },
-                                                                        child:
-                                                                            Text(
-                                                                          'No',
-                                                                          style:
-                                                                              customTextStyleOne(),
-                                                                        ),
-                                                                      )
-                                                                    ],
-                                                                  )));
-                                                },
-                                                child: Text(
-                                                  'Delete',
-                                                  style: customTextStyleOne(),
-                                                )),
-                                          ]),
-                                ),
-                              );
-                            }),
-                            itemCount: regList.length,
+                                                                              .upcomingDate
+                                                                              .hour +
+                                                                          regList[index]
+                                                                              .upcomingDate
+                                                                              .microsecond);
+                                                                      cancelScheduledNotificationsOne(regList[index].upcomingDate.minute +
+                                                                          regList[index]
+                                                                              .upcomingDate
+                                                                              .hour +
+                                                                          regList[index]
+                                                                              .upcomingDate
+                                                                              .microsecond +
+                                                                          1);
+                                                                      context
+                                                                          .read<
+                                                                              RegularpaymentsBloc>()
+                                                                          .add(
+                                                                              AddRegularPayment());
+                                                                    },
+                                                                    child: Text(
+                                                                      'Yes',
+                                                                      style:
+                                                                          customTextStyleOne(),
+                                                                    ),
+                                                                  ),
+                                                                  TextButton(
+                                                                    onPressed:
+                                                                        () {
+                                                                      Navigator.pop(
+                                                                          context);
+                                                                    },
+                                                                    child: Text(
+                                                                      'No',
+                                                                      style:
+                                                                          customTextStyleOne(),
+                                                                    ),
+                                                                  )
+                                                                ],
+                                                              )));
+                                            },
+                                            child: Text(
+                                              'Delete',
+                                              style: customTextStyleOne(),
+                                            )),
+                                      ]),
+                            ),
                           );
-                  }),
+                        }),
+                        itemCount: regList.length,
+                      );
+              }),
               SizedBox(
                 height: 150.h,
               ),

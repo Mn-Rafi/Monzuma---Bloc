@@ -279,6 +279,24 @@ class _ScreenStatisticsState extends State<ScreenStatistics>
       }
     }
 
+    List<ProfileDetails> profileDetails =
+        Hive.box<ProfileDetails>('profiledetails').values.toList();
+
+    List<Transactions> transactionList1 = dropdownvalue == items[0]
+        ? incomeorExpense(transactionList)[1]
+        : dropdownvalue == items[1]
+            ? monthWise(incomeorExpense(transactionList)[1], _selected)
+            : dropdownvalue == items[2]
+                ? yearWise(incomeorExpense(transactionList)[1], _selectedYear)
+                : periodWise(incomeorExpense(transactionList)[1], dateRange);
+
+    List<Transactions> transactionList2 = dropdownvalue == items[0]
+        ? incomeorExpense(transactionList)[0]
+        : dropdownvalue == items[1]
+            ? monthWise(incomeorExpense(transactionList)[0], _selected)
+            : dropdownvalue == items[2]
+                ? yearWise(incomeorExpense(transactionList)[0], _selectedYear)
+                : periodWise(incomeorExpense(transactionList)[0], dateRange);
     return WillPopScope(
       onWillPop: () async {
         DateTime now = DateTime.now();
@@ -590,153 +608,114 @@ class _ScreenStatisticsState extends State<ScreenStatistics>
                 ),
                 Expanded(
                   child: TabBarView(controller: _tabController, children: [
-                    ValueListenableBuilder(
-                        valueListenable:
-                            Hive.box<Transactions>('transactions').listenable(),
-                        builder: (context, Box<Transactions> box, _) {
-                          List<Transactions> transactionList = dropdownvalue ==
-                                  items[0]
-                              ? incomeorExpense(box.values.toList())[0]
-                              : dropdownvalue == items[1]
-                                  ? monthWise(
-                                      incomeorExpense(box.values.toList())[0],
-                                      _selected)
-                                  : dropdownvalue == items[2]
-                                      ? yearWise(
-                                          incomeorExpense(
-                                              box.values.toList())[0],
-                                          _selectedYear)
-                                      : periodWise(
-                                          incomeorExpense(
-                                              box.values.toList())[0],
-                                          dateRange);
-                          return transactionList.isEmpty ||
-                                  !isCategoryEmpty(true)
-                              ? Center(
-                                  child: Text(
-                                    'No Income Transactions Found',
-                                    style: customTextStyleOne(
+                    transactionList2.isEmpty || !isCategoryEmpty(true)
+                        ? Center(
+                            child: Text(
+                              'No Income Transactions Found',
+                              style: customTextStyleOne(
+                                  color: MediaQuery.of(context)
+                                              .platformBrightness ==
+                                          Brightness.dark
+                                      ? firstWhite
+                                      : firstBlack),
+                            ),
+                          )
+                        : SfCircularChart(
+                            legend: Legend(
+                                textStyle: customTextStyleOne(
+                                  color: MediaQuery.of(context)
+                                              .platformBrightness ==
+                                          Brightness.dark
+                                      ? firstWhite
+                                      : firstBlack,
+                                ),
+                                isVisible: true,
+                                overflowMode: LegendItemOverflowMode.scroll),
+                            tooltipBehavior: _tooltipBehavior,
+                            series: <CircularSeries>[
+                                PieSeries<IncomeData, String>(
+                                  explode: true,
+                                  dataSource: dropdownvalue == items[0]
+                                      ? getIncomeDate()
+                                      : dropdownvalue == items[1]
+                                          ? getIncomeDateMonth(_selected)
+                                          : dropdownvalue == items[2]
+                                              ? getIncomeDateYear(_selectedYear)
+                                              : periodWiseList(dateRange),
+                                  xValueMapper: (IncomeData data, _) =>
+                                      data.catogory,
+                                  yValueMapper: (IncomeData data, _) =>
+                                      data.amount,
+                                  dataLabelSettings: DataLabelSettings(
+                                      textStyle: customTextStyleOne(
                                         color: MediaQuery.of(context)
                                                     .platformBrightness ==
                                                 Brightness.dark
                                             ? firstWhite
-                                            : firstBlack),
-                                  ),
-                                )
-                              : SfCircularChart(
-                                  legend: Legend(
-                                      textStyle: customTextStyleOne(color: MediaQuery.of(context)
-                                                .platformBrightness ==
-                                            Brightness.dark
-                                        ? firstWhite
-                                        : firstBlack,),
+                                            : firstBlack,
+                                      ),
+                                      showZeroValue: false,
                                       isVisible: true,
-                                      overflowMode:
-                                          LegendItemOverflowMode.scroll),
-                                  tooltipBehavior: _tooltipBehavior,
-                                  series: <CircularSeries>[
-                                      PieSeries<IncomeData, String>(
-                                        explode: true,
-                                        dataSource: dropdownvalue == items[0]
-                                            ? getIncomeDate()
-                                            : dropdownvalue == items[1]
-                                                ? getIncomeDateMonth(_selected)
-                                                : dropdownvalue == items[2]
-                                                    ? getIncomeDateYear(
-                                                        _selectedYear)
-                                                    : periodWiseList(dateRange),
-                                        xValueMapper: (IncomeData data, _) =>
-                                            data.catogory,
-                                        yValueMapper: (IncomeData data, _) =>
-                                            data.amount,
-                                        dataLabelSettings: DataLabelSettings(
-                                            textStyle: customTextStyleOne(color: MediaQuery.of(context)
-                                                .platformBrightness ==
-                                            Brightness.dark
-                                        ? firstWhite
-                                        : firstBlack,),
-                                            showZeroValue: false,
-                                            isVisible: true,
-                                            labelPosition:
-                                                ChartDataLabelPosition.outside),
-                                        enableTooltip: true,
-                                      )
-                                    ]);
-                        }),
-                    ValueListenableBuilder(
-                        valueListenable:
-                            Hive.box<Transactions>('transactions').listenable(),
-                        builder: (context, Box<Transactions> box, _) {
-                          List<Transactions> transactionList = dropdownvalue ==
-                                  items[0]
-                              ? incomeorExpense(box.values.toList())[1]
-                              : dropdownvalue == items[1]
-                                  ? monthWise(
-                                      incomeorExpense(box.values.toList())[1],
-                                      _selected)
-                                  : dropdownvalue == items[2]
-                                      ? yearWise(
-                                          incomeorExpense(
-                                              box.values.toList())[1],
-                                          _selectedYear)
-                                      : periodWise(
-                                          incomeorExpense(
-                                              box.values.toList())[1],
-                                          dateRange);
-                          return transactionList.isEmpty ||
-                                  !isCategoryEmpty(false)
-                              ? Center(
-                                  child: Text(
-                                    'No Expense Transactions Found',
-                                    style: customTextStyleOne(
+                                      labelPosition:
+                                          ChartDataLabelPosition.outside),
+                                  enableTooltip: true,
+                                )
+                              ]),
+                    transactionList1.isEmpty || !isCategoryEmpty(false)
+                        ? Center(
+                            child: Text(
+                              'No Expense Transactions Found',
+                              style: customTextStyleOne(
+                                  color: MediaQuery.of(context)
+                                              .platformBrightness ==
+                                          Brightness.dark
+                                      ? firstWhite
+                                      : firstBlack),
+                            ),
+                          )
+                        : SfCircularChart(
+                            legend: Legend(
+                                textStyle: customTextStyleOne(
+                                  color: MediaQuery.of(context)
+                                              .platformBrightness ==
+                                          Brightness.dark
+                                      ? firstWhite
+                                      : firstBlack,
+                                ),
+                                isVisible: true,
+                                overflowMode: LegendItemOverflowMode.scroll),
+                            tooltipBehavior: _tooltipBehavior,
+                            series: <CircularSeries>[
+                                PieSeries<ExpenseData, String>(
+                                  explode: true,
+                                  dataSource: dropdownvalue == items[0]
+                                      ? getExpenseDate()
+                                      : dropdownvalue == items[1]
+                                          ? getExpenseDateMonth(_selected)
+                                          : dropdownvalue == items[2]
+                                              ? getExpenseDateYear(
+                                                  _selectedYear)
+                                              : periodWiseListExpense(
+                                                  dateRange),
+                                  xValueMapper: (ExpenseData data, _) =>
+                                      data.catogory,
+                                  yValueMapper: (ExpenseData data, _) =>
+                                      data.amount,
+                                  dataLabelSettings: DataLabelSettings(
+                                      textStyle: customTextStyleOne(
                                         color: MediaQuery.of(context)
                                                     .platformBrightness ==
                                                 Brightness.dark
                                             ? firstWhite
-                                            : firstBlack),
-                                  ),
-                                )
-                              : SfCircularChart(
-                                  legend: Legend(
-                                      textStyle: customTextStyleOne(color: MediaQuery.of(context)
-                                                .platformBrightness ==
-                                            Brightness.dark
-                                        ? firstWhite
-                                        : firstBlack,),
+                                            : firstBlack,
+                                      ),
+                                      showZeroValue: false,
                                       isVisible: true,
-                                      overflowMode:
-                                          LegendItemOverflowMode.scroll),
-                                  tooltipBehavior: _tooltipBehavior,
-                                  series: <CircularSeries>[
-                                      PieSeries<ExpenseData, String>(
-                                        explode: true,
-                                        dataSource: dropdownvalue == items[0]
-                                            ? getExpenseDate()
-                                            : dropdownvalue == items[1]
-                                                ? getExpenseDateMonth(_selected)
-                                                : dropdownvalue == items[2]
-                                                    ? getExpenseDateYear(
-                                                        _selectedYear)
-                                                    : periodWiseListExpense(
-                                                        dateRange),
-                                        xValueMapper: (ExpenseData data, _) =>
-                                            data.catogory,
-                                        yValueMapper: (ExpenseData data, _) =>
-                                            data.amount,
-                                        dataLabelSettings: DataLabelSettings(
-                                            textStyle: customTextStyleOne(color : MediaQuery.of(context)
-                                                .platformBrightness ==
-                                            Brightness.dark
-                                        ? firstWhite
-                                        : firstBlack,),
-                                            showZeroValue: false,
-                                            isVisible: true,
-                                            labelPosition:
-                                                ChartDataLabelPosition.outside),
-                                        enableTooltip: true,
-                                      )
-                                    ]);
-                        }),
+                                      labelPosition:
+                                          ChartDataLabelPosition.outside),
+                                  enableTooltip: true,
+                                )
+                              ])
                   ]),
                 ),
                 SizedBox(
@@ -744,22 +723,15 @@ class _ScreenStatisticsState extends State<ScreenStatistics>
                 )
               ],
             ),
-            ValueListenableBuilder(
-                valueListenable:
-                    Hive.box<ProfileDetails>('profiledetails').listenable(),
-                builder: (context, Box<ProfileDetails> box, widget) {
-                  List<ProfileDetails> profileDetails = box.values.toList();
-
-                  return DraggableScrollableSheet(
-                      initialChildSize: childSize,
-                      maxChildSize: 0.8,
-                      minChildSize: 0.2,
-                      builder: (context, controller) => CustomWalletContainer(
-                            initialWallletAmount: double.parse(
-                                profileDetails[0].initialWalletBalance),
-                            controller: controller,
-                          ));
-                })
+            DraggableScrollableSheet(
+                initialChildSize: childSize,
+                maxChildSize: 0.8,
+                minChildSize: 0.2,
+                builder: (context, controller) => CustomWalletContainer(
+                      initialWallletAmount:
+                          double.parse(profileDetails[0].initialWalletBalance),
+                      controller: controller,
+                    ))
           ],
         ),
       ),
