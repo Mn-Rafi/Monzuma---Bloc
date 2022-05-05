@@ -1,8 +1,9 @@
-
+import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:money_manager_app/Hive/HiveClass/database.dart';
 import 'package:money_manager_app/Logic/search/search_bloc.dart';
 import 'package:money_manager_app/customs/custom_text_and_color.dart';
 
@@ -21,7 +22,20 @@ class ShowimageCubit extends Cubit<ShowimageState> {
     return notification;
   }
 
-  IconData changeIcon(IconData iconData, Widget myField, String searchInput, BuildContext context) {
+  DateTime changeTime(DateTime dateTime){
+    emit(DateChangeState(dateTime: dateTime));
+    return dateTime;
+  }
+
+  Categories dropdownValue(Categories dropVal) {
+    emit(DropdownState(dropVal: dropVal));
+    return dropVal;
+  }
+
+  
+
+  IconData changeIcon(IconData iconData, Widget myField, String searchInput,
+      BuildContext context) {
     if (iconData == Icons.clear) {
       emit(SearchIconState(iconData: Icons.clear, myField: myField));
       return SearchIconState(
@@ -37,7 +51,9 @@ class ShowimageCubit extends Cubit<ShowimageState> {
                 style: customTextStyleOne(),
                 onChanged: (value) {
                   searchInput = value;
-                  context.read<SearchBloc>().add(EnterInput(searchInput: value));
+                  context
+                      .read<SearchBloc>()
+                      .add(EnterInput(searchInput: value));
                 },
                 decoration: InputDecoration(
                   border: InputBorder.none,
@@ -59,9 +75,13 @@ class ShowimageCubit extends Cubit<ShowimageState> {
     }
   }
 
-  Widget changeMyField(IconData iconData, Widget myField, String searchInput, BuildContext context) {
+  Widget changeMyField(IconData iconData, Widget myField, String searchInput,
+      BuildContext context) {
     if (iconData == Icons.clear) {
-      emit(SearchIconState(iconData: iconData, myField: myField, ));
+      emit(SearchIconState(
+        iconData: iconData,
+        myField: myField,
+      ));
       return SearchIconState(
         iconData: iconData,
         myField: Container(
@@ -75,7 +95,7 @@ class ShowimageCubit extends Cubit<ShowimageState> {
               style: customTextStyleOne(),
               onChanged: (value) {
                 searchInput = value;
-                  context.read<SearchBloc>().add(EnterInput(searchInput: value));
+                context.read<SearchBloc>().add(EnterInput(searchInput: value));
               },
               decoration: InputDecoration(
                 border: InputBorder.none,
@@ -94,8 +114,8 @@ class ShowimageCubit extends Cubit<ShowimageState> {
             style: customTextStyleOne(
                 fontSize: 20.sp, color: isDarkMode ? firstWhite : firstBlack),
           )));
-          
-                  context.read<SearchBloc>().add(ClearInput());
+
+      context.read<SearchBloc>().add(ClearInput());
       return SearchIconState(iconData: iconData, myField: myField).myField;
     }
   }

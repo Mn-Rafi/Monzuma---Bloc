@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
 import 'package:money_manager_app/Category%20page/screen_catogories.dart';
 import 'package:money_manager_app/Hive/HiveClass/database.dart';
+import 'package:money_manager_app/Logic/cubit/showimage_cubit.dart';
 import 'package:money_manager_app/MainScreen/screen_home.dart';
 import 'package:money_manager_app/add%20transaction%20page/custom_textfield.dart';
 import 'package:money_manager_app/customs/custom_text_and_color.dart';
@@ -61,51 +63,55 @@ class _CustomAddCatogoryIncomeState extends State<CustomAddCatogoryIncome> {
               SizedBox(
                 height: 10.w,
               ),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10),
-                decoration: BoxDecoration(
-                    color: MediaQuery.of(context).platformBrightness ==
-                            Brightness.dark
-                        ? firstGrey
-                        : firstWhite,
-                    border: Border.all(width: 0.5),
-                    borderRadius: BorderRadius.circular(10)),
-                child: ValueListenableBuilder(
-                    valueListenable:
-                        Hive.box<Categories>('categories').listenable(),
-                    builder: (context, Box<Categories> box, _) {
-                      return DropdownButton<dynamic>(
-                        style: customTextStyleOne(),
-                        underline: const SizedBox(),
-                        hint: Text(
-                          widget.listHint,
-                          style: customTextStyleOne(
-                              color:
-                                  MediaQuery.of(context).platformBrightness ==
+              BlocBuilder<ShowimageCubit, ShowimageState>(
+                builder: (context, state) {
+                  return Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10),
+                    decoration: BoxDecoration(
+                        color: MediaQuery.of(context).platformBrightness ==
+                                Brightness.dark
+                            ? firstGrey
+                            : firstWhite,
+                        border: Border.all(width: 0.5),
+                        borderRadius: BorderRadius.circular(10)),
+                    child: ValueListenableBuilder(
+                        valueListenable:
+                            Hive.box<Categories>('categories').listenable(),
+                        builder: (context, Box<Categories> box, _) {
+                          return DropdownButton<dynamic>(
+                            style: customTextStyleOne(),
+                            underline: const SizedBox(),
+                            hint: Text(
+                              widget.listHint,
+                              style: customTextStyleOne(
+                                  color: MediaQuery.of(context)
+                                              .platformBrightness ==
                                           Brightness.dark
                                       ? firstWhite
                                       : firstGrey),
-                        ),
-                        value: dropdownvalue,
-                        icon: const Icon(Icons.keyboard_arrow_down),
-                        items: type(box.values.toList())[widget.index].map(
-                          (Categories e) {
-                            return DropdownMenuItem(
-                              child: Text(e.category),
-                              value: e,
-                              onTap: () {
-                                dropdownvalue = e;
+                            ),
+                            value: dropdownvalue,
+                            icon: const Icon(Icons.keyboard_arrow_down),
+                            items: type(box.values.toList())[widget.index].map(
+                              (Categories e) {
+                                return DropdownMenuItem(
+                                  child: Text(e.category),
+                                  value: e,
+                                  onTap: () {
+                                    dropdownvalue = e;
+                                  },
+                                );
                               },
-                            );
-                          },
-                        ).toList(),
-                        onChanged: (value) {
-                          setState(() {
-                            dropdownvalue = value;
-                          });
-                        },
-                      );
-                    }),
+                            ).toList(),
+                            onChanged: (value) {
+                              dropdownvalue = context
+                                  .read<ShowimageCubit>()
+                                  .dropdownValue(value);
+                            },
+                          );
+                        }),
+                  );
+                },
               ),
               Row(
                 children: [
@@ -144,22 +150,24 @@ class _CustomAddCatogoryIncomeState extends State<CustomAddCatogoryIncome> {
                       width: 160.w,
                       child: CustomTextFieldFour(
                         onChanged: ((value) {
-                          setState(() {
-                            amount = double.parse(value);
-                          });
+                          amount = double.parse(value);
                         }),
                         prefixIcon: const Icon(Icons.currency_rupee),
                         labelText: 'Amount',
                       )),
-                  SizedBox(
-                    width: 160.w,
-                    child: CustomTextFieldForDate(
-                      onTap: () {
-                        pickdate(context);
-                      },
-                      prefixIcon: const Icon(Icons.calendar_month),
-                      hint: getText(),
-                    ),
+                  BlocBuilder<ShowimageCubit, ShowimageState>(
+                    builder: (context, state) {
+                      return SizedBox(
+                        width: 160.w,
+                        child: CustomTextFieldForDate(
+                          onTap: () {
+                            pickdate(context);
+                          },
+                          prefixIcon: const Icon(Icons.calendar_month),
+                          hint: getText(),
+                        ),
+                      );
+                    },
                   ),
                 ],
               ),
@@ -182,9 +190,7 @@ class _CustomAddCatogoryIncomeState extends State<CustomAddCatogoryIncome> {
                 textCapitalization: TextCapitalization.sentences,
                 style: customTextStyleOne(),
                 onChanged: ((value) {
-                  setState(() {
-                    notes = value;
-                  });
+                  notes = value;
                 }),
                 maxLines: 4,
                 decoration: InputDecoration(
@@ -222,7 +228,7 @@ class _CustomAddCatogoryIncomeState extends State<CustomAddCatogoryIncome> {
 
                       Navigator.of(context).pushAndRemoveUntil(
                           MaterialPageRoute(
-                              builder: (context) => const ScreenHome()),
+                              builder: (context) => ScreenHome()),
                           (route) => false);
                       ScaffoldMessenger.of(context).showSnackBar(snackBarOne);
                     }
@@ -251,9 +257,7 @@ class _CustomAddCatogoryIncomeState extends State<CustomAddCatogoryIncome> {
     if (newDate == null) {
       return;
     } else {
-      setState(() {
-        date = newDate;
-      });
+      date = context.read<ShowimageCubit>().changeTime(newDate);
     }
   }
 }

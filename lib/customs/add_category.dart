@@ -47,9 +47,7 @@ class _AddCategoryState extends State<AddCategory> {
                 },
                 maxLength: 25,
                 onChanged: (value) {
-                  setState(() {
                     newCategory = value;
-                  });
                 },
                 keyboardType: TextInputType.name,
                 textCapitalization: TextCapitalization.sentences,
@@ -160,9 +158,7 @@ class _EditIncomeCategory extends State<EditIncomeCategory> {
                   }
                 },
                 onChanged: (value) {
-                  setState(() {
                     newCategory = value;
-                  });
                 },
                 keyboardType: TextInputType.name,
                 textCapitalization: TextCapitalization.sentences,
@@ -242,9 +238,7 @@ class _AddExpenseCategory extends State<AddExpenseCategory> {
                 },
                 maxLength: 25,
                 onChanged: (value) {
-                  setState(() {
                     newCategory = value;
-                  });
                 },
                 style: customTextStyleOne(),
                 keyboardType: TextInputType.name,
