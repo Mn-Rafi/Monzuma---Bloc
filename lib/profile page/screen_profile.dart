@@ -277,7 +277,7 @@ class _ScreenProfileDetailsState extends State<ScreenProfileDetails> {
                                                 .pushAndRemoveUntil(
                                                     MaterialPageRoute(
                                                         builder: (context) =>
-                                                            const ScreenHome()),
+                                                            ScreenHome()),
                                                     (route) => false);
                                             ScaffoldMessenger.of(context)
                                                 .showSnackBar(snackBarOne);
