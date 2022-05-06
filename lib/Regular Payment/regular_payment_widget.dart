@@ -119,7 +119,9 @@ class _RegularPaymentAddState extends State<RegularPaymentAdd> {
                             upcomingDate: date,
                           ),
                         );
-                          context.read<RegularpaymentsBloc>().add(AddRegularPayment());
+                        context
+                            .read<RegularpaymentsBloc>()
+                            .add(AddRegularPayment());
                         scheduledNotification(date.day, name,
                             date.microsecond + date.hour + date.minute);
                         scheduledNotificationRepeat(date.day, name,
@@ -268,7 +270,9 @@ class _RegularPaymentEditState extends State<RegularPaymentEdit> {
                             upcomingDate: date,
                           ),
                         );
-                        context.read<RegularpaymentsBloc>().add(AddRegularPayment());
+                        context
+                            .read<RegularpaymentsBloc>()
+                            .add(AddRegularPayment());
                         cancelScheduledNotificationsOne(
                             widget.initialdate.microsecond +
                                 widget.initialdate.hour +

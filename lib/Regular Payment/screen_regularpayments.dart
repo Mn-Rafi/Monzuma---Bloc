@@ -155,7 +155,7 @@ class _RegularPaymentState extends State<RegularPayment> {
                                                     context: context,
                                                     builder: (ctx) =>
                                                         RegularPaymentEdit(
-                                                          index: index,
+                                                          index: regList[index].key,
                                                           initialdate:
                                                               regList[index]
                                                                   .upcomingDate,

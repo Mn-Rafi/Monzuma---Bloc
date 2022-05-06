@@ -1,6 +1,5 @@
 import 'package:awesome_notifications/awesome_notifications.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:hive_flutter/hive_flutter.dart';
@@ -232,56 +231,51 @@ class _ScreenProfileDetailsState extends State<ScreenProfileDetails> {
                                   actions: [
                                     TextButton(
                                         onPressed: () async {
-                                          if (notificationValue == true) {
-                                            await Hive.box<Transactions>(
-                                                    'transactions')
-                                                .clear();
-                                            await Hive.box<Categories>(
-                                                    'categories')
-                                                .clear();
-                                            await Hive.box<RegularPayments>(
-                                                    'regularPayments')
-                                                .clear();
-                                            await Hive.box<LockAuthentication>(
-                                                    'lockAuth')
-                                                .clear();
-                                            for (int i = 0;
-                                                i < listIncomeCategories.length;
-                                                i++) {
-                                              Hive.box<Categories>('categories')
-                                                  .add(Categories(
-                                                      category:
-                                                          listIncomeCategories[
-                                                              i],
-                                                      type: true));
-                                            }
-                                            for (int i = 0;
-                                                i <
-                                                    listExpenseCategories
-                                                        .length;
-                                                i++) {
-                                              Hive.box<Categories>('categories')
-                                                  .add(Categories(
-                                                      category:
-                                                          listExpenseCategories[
-                                                              i],
-                                                      type: false));
-                                            }
-                                            Hive.box<LockAuthentication>(
-                                                    'lockAuth')
-                                                .add(LockAuthentication(
-                                                    enableNoti: true,
-                                                    enableAuth: false));
-                                            cancelScheduledNotifications();
-                                            Navigator.of(context)
-                                                .pushAndRemoveUntil(
-                                                    MaterialPageRoute(
-                                                        builder: (context) =>
-                                                            ScreenHome()),
-                                                    (route) => false);
-                                            ScaffoldMessenger.of(context)
-                                                .showSnackBar(snackBarOne);
+                                          await Hive.box<Transactions>(
+                                                  'transactions')
+                                              .clear();
+                                          await Hive.box<Categories>(
+                                                  'categories')
+                                              .clear();
+                                          await Hive.box<RegularPayments>(
+                                                  'regularPayments')
+                                              .clear();
+                                          await Hive.box<LockAuthentication>(
+                                                  'lockAuth')
+                                              .clear();
+                                          for (int i = 0;
+                                              i < listIncomeCategories.length;
+                                              i++) {
+                                            Hive.box<Categories>('categories')
+                                                .add(Categories(
+                                                    category:
+                                                        listIncomeCategories[i],
+                                                    type: true));
                                           }
+                                          for (int i = 0;
+                                              i < listExpenseCategories.length;
+                                              i++) {
+                                            Hive.box<Categories>('categories')
+                                                .add(Categories(
+                                                    category:
+                                                        listExpenseCategories[
+                                                            i],
+                                                    type: false));
+                                          }
+                                          Hive.box<LockAuthentication>(
+                                                  'lockAuth')
+                                              .add(LockAuthentication(
+                                                  enableNoti: true,
+                                                  enableAuth: false));
+                                          cancelScheduledNotifications();
+                                          Navigator.of(context)
+                                              .pushAndRemoveUntil(
+                                                  MaterialPageRoute(
+                                                      builder: (context) =>
+                                                          const ScreenHome()),
+                                                  (route) => false);
+                                          ScaffoldMessenger.of(context)
+                                              .showSnackBar(snackBarOne);
                                         },
                                         child: Text(
                                           'Yes',
