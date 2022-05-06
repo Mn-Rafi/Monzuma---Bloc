@@ -116,7 +116,7 @@ class _ScreenSplashState extends State<ScreenSplash> {
           MaterialPageRoute(builder: (context) => const ScreenProfile()));
     } else {
       Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (context) => ScreenHome()));
+          MaterialPageRoute(builder: (context) => const ScreenHome()));
     }
   }
 

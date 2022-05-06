@@ -231,7 +231,7 @@ class _ScreenProfileState extends State<ScreenProfile> {
                           scheduledNotificationEveryday(userName);
                           Navigator.of(context).pushReplacement(
                             MaterialPageRoute(
-                              builder: (ctx) => ScreenHome(),
+                              builder: (ctx) => const ScreenHome(),
                             ),
                           );
                         }

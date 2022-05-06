@@ -228,7 +228,7 @@ class _CustomAddCatogoryIncomeState extends State<CustomAddCatogoryIncome> {
 
                       Navigator.of(context).pushAndRemoveUntil(
                           MaterialPageRoute(
-                              builder: (context) => ScreenHome()),
+                              builder: (context) => const ScreenHome()),
                           (route) => false);
                       ScaffoldMessenger.of(context).showSnackBar(snackBarOne);
                     }
